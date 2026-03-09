@@ -159,13 +159,11 @@ body {
 
 /* ---- 11. THREE.JS CANVAS (#three-canvas)
    Canvas donde Three.js renderiza la escena 3D.
-   Invisible al inicio (opacity:0); se controla desde
-   script.js según la fase de scroll (hero vs. galaxia). */
+   Vive dentro del #inicio (section hero, position:sticky).
+   Los estilos de posición e opacidad se definen inline en el HTML.
+   display:block evita el espacio extra de inline por defecto. */
 #three-canvas {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 1s;
+    display: block;
 }
 
 

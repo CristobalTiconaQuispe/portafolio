@@ -99,13 +99,9 @@
              en bucle, efecto visual tipo "monitor CRT". -->
         <div class="scanline"></div>
 
-        <!-- 5. CANVAS THREE.JS
-             El renderer de Three.js dibuja aquí TODA la escena:
-             - Plano 3D con las texturas de la secuencia de imágenes
-             - Geometrías wireframe flotantes en el hero
-             - Galaxia de partículas después del hero
-             La opacidad se controla desde script.js según el scroll. -->
-        <canvas id="three-canvas"></canvas>
+        <!-- 5. CANVAS THREE.JS eliminado del layer fijo;
+             ahora está dentro del section #inicio para que
+             solo sea visible durante el hero. -->
 
     </div><!-- /fixed layer -->
 
@@ -164,7 +160,7 @@
     estático mientras las imágenes cambian con el scroll.
     ================================================================
     -->
-    <div id="scroll-stage" style="position:relative; height:calc(100vh + 40 * 100px);">
+    <div id="scroll-stage" style="position:relative; height:calc(100vh + 192 * 100px);">
 
         <!--
         HERO SECTION — sticky
@@ -172,16 +168,17 @@
         mientras el usuario scrollea dentro del scroll-stage.
         Cuando el stage termina, el hero desaparece de manera natural.
         -->
-        <section id="inicio" style="position:sticky; top:0; height:100vh; width:100%; overflow:hidden;">
+        <section id="inicio"
+            style="position:sticky; top:0; height:100vh; width:100%; overflow:hidden; background:#020617;">
 
             <!--
-            FONDO DE IMÁGENES — renderizado por Three.js
-            Las imágenes ya NO se muestran con divs CSS.
-            script.js (Sección 3) las carga como THREE.Texture y las
-            proyecta sobre un PlaneGeometry 3D en el canvas de fondo.
-            Efectos 3D de scroll: tilt de pitch/yaw, zoom de cámara,
-            scale y cross-fade suave entre frames.
+            CANVAS THREE.JS — dentro del hero para que solo
+            sea visible mientras el usuario está en esta sección.
+            position:absolute + inset:0 cubre todo el section.
+            z-index:1 queda detrás del overlay y el contenido.
             -->
+            <canvas id="three-canvas"
+                style="position:absolute; inset:0; width:100%; height:100%; z-index:1; opacity:0; transition:opacity 1s;"></canvas>
 
             <!--
             OVERLAY OSCURO
