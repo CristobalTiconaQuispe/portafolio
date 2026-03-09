@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Arte Digital | Portafolio Creativo</title>
+
+    <!--
+    ================================================================
+    FUENTES DE GOOGLE
+    - Inter: tipografía principal del cuerpo de texto
+    - Space Grotesk: tipografía display para títulos grandes
+    - Material Symbols Outlined: iconos vectoriales de Google
+    ================================================================
+    -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <!--
+    ================================================================
+    TAILWIND CSS (CDN)
+    Framework de utilidades CSS. La configuración debajo extiende
+    el tema base con colores y fuentes personalizados del portafolio.
+    ================================================================
+    -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",   /* modo oscuro activado con la clase "dark" en <body> */
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0ea5e9",  /* celeste principal (Sky-500) */
+                        secondary: "#1e3a8a",  /* azul profundo */
+                        "dark-bg": "#020617",  /* fondo oscuro de la página */
+                    },
+                    fontFamily: {
+                        display: ["Space Grotesk", "sans-serif"],  /* títulos grandes */
+                        sans: ["Inter", "sans-serif"],           /* texto general */
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Estilos propios del portafolio (separados en style.css) -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!--
+    ================================================================
+    THREE.JS (CDN r128)
+    Librería 3D para WebGL. Se carga antes del body para que esté
+    disponible cuando script.js lo necesite.
+    ================================================================
+    -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body class="dark selection:bg-primary selection:text-white">
+
+    <!--
+    ================================================================
+    CAPA DE FONDO FIJA (fixed layer)
+    position:fixed → se mantiene fija al hacer scroll.
+    pointer-events:none → no intercepta clics del usuario.
+    z-index:0 → queda debajo de todo el contenido de la página.
+    Contiene 4 elementos decorativos superpuestos:
+      1. Luz de cursor (sun-light)
+      2. Gradiente radial hero
+      3. Cuadrícula de líneas finas
+      4. Línea de escaneo animada
+      5. Canvas de Three.js (galaxia 3D)
+    ================================================================
+    -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+
+        <!-- 1. LUZ QUE SIGUE AL CURSOR
+             Gradiente radial circular de color ámbar/naranja.
+             Su posición (left/top) se actualiza en script.js
+             con el evento mousemove para seguir al cursor. -->
+        <div id="sun-light"></div>
+
+        <!-- 2. GRADIENTE RADIAL HERO
+             Sobreposición de color que da el efecto de "brillo central"
+             en toda la página. Definido en .hero-gradient (style.css). -->
+        <div class="absolute inset-0 hero-gradient"></div>
+
+        <!-- 3. CUADRÍCULA DE LÍNEAS
+             Patrón de cuadrícula muy sutil (3% de opacidad) generado
+             con background-image en .grid-line (style.css). -->
+        <div class="absolute inset-0 grid-line"></div>
+
+        <!-- 4. LÍNEA DE ESCANEO
+             Barra horizontal que recorre la página de arriba a abajo
+             en bucle, efecto visual tipo "monitor CRT". -->
+        <div class="scanline"></div>
+
+        <!-- 5. CANVAS THREE.JS
+             El renderer de Three.js dibuja aquí TODA la escena:
+             - Plano 3D con las texturas de la secuencia de imágenes
+             - Geometrías wireframe flotantes en el hero
+             - Galaxia de partículas después del hero
+             La opacidad se controla desde script.js según el scroll. -->
+        <canvas id="three-canvas"></canvas>
+
+    </div><!-- /fixed layer -->
+
+
+    <!--
+    ================================================================
+    NAVEGACIÓN PRINCIPAL
+    position:fixed → siempre visible en la parte superior.
+    z-index:50 → por encima de todo el contenido.
+    Al hacer scroll pasado el hero, el fondo se vuelve sólido
+    (efecto blur) mediante script.js → función onScroll().
+    ================================================================
+    -->
+    <nav id="main-nav"
+        class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 md:px-16 py-8 transition-all duration-500 border-b border-transparent">
+
+        <!-- Logo / nombre -->
+        <div class="flex items-center space-x-2">
+            <span class="font-display text-xl font-bold tracking-tighter uppercase">
+                AURON <span class="text-primary">/</span> PORTAFOLIO
+            </span>
+        </div>
+
+        <!-- Links de navegación (ocultos en móvil) -->
+        <div class="hidden md:flex items-center space-x-12">
+            <a class="text-[10px] font-medium tracking-[0.3em] uppercase hover:text-primary transition-colors"
+                href="#inicio">Inicio</a>
+            <a class="text-[10px] font-medium tracking-[0.3em] uppercase hover:text-primary transition-colors"
+                href="#servicios">Servicios</a>
+            <a class="text-[10px] font-medium tracking-[0.3em] uppercase hover:text-primary transition-colors"
+                href="#proyectos">Proyectos</a>
+            <a class="text-[10px] font-medium tracking-[0.3em] uppercase hover:text-primary transition-colors"
+                href="#contacto">Contacto</a>
+        </div>
+
+        <!-- Botón de acceso -->
+        <div>
+            <a class="text-[10px] font-bold tracking-[0.2em] uppercase border border-white/20 px-6 py-2.5 rounded-sm hover:bg-white hover:text-black transition-all duration-300"
+                href="#">Acceso</a>
+        </div>
+    </nav>
+
+    <!-- Texto lateral decorativo (solo visible en pantallas xl+) -->
+    <div class="fixed left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-center hidden xl:block z-40">
+        <span class="text-[9px] uppercase tracking-[0.6em] text-white/30 whitespace-nowrap font-mono">
+            ESTADO DEL SISTEMA: ÓPTIMO // FLUJO_DATOS_CIFRADOS
+        </span>
+    </div>
+
+
+    <!--
+    ================================================================
+    SCROLL STAGE — contenedor de la secuencia hero
+    Tiene una altura extendida = 100vh + (40 imágenes × 100px).
+    Esto crea espacio de scroll "falso" para que el hero se quede
+    estático mientras las imágenes cambian con el scroll.
+    ================================================================
+    -->
+    <div id="scroll-stage" style="position:relative; height:calc(100vh + 40 * 100px);">
+
+        <!--
+        HERO SECTION — sticky
+        position:sticky + top:0 → el hero se queda pegado al top
+        mientras el usuario scrollea dentro del scroll-stage.
+        Cuando el stage termina, el hero desaparece de manera natural.
+        -->
+        <section id="inicio" style="position:sticky; top:0; height:100vh; width:100%; overflow:hidden;">
+
+            <!--
+            FONDO DE IMÁGENES — renderizado por Three.js
+            Las imágenes ya NO se muestran con divs CSS.
+            script.js (Sección 3) las carga como THREE.Texture y las
+            proyecta sobre un PlaneGeometry 3D en el canvas de fondo.
+            Efectos 3D de scroll: tilt de pitch/yaw, zoom de cámara,
+            scale y cross-fade suave entre frames.
+            -->
+
+            <!--
+            OVERLAY OSCURO
+            Gradiente diagonal que oscurece la imagen de fondo para que
+            el texto del hero sea legible sobre cualquier fotografía.
+            -->
+            <div
+                style="position:absolute; inset:0; z-index:2; pointer-events:none;
+                background:linear-gradient(135deg,rgba(2,6,23,0.82) 0%,rgba(2,6,23,0.5) 45%,rgba(2,6,23,0.25) 75%,rgba(2,6,23,0.6) 100%);">
+            </div>
+
+            <!--
+            CONTENIDO DEL HERO
+            z-index:10 → por encima de las capas de imagen y el overlay.
+            Contiene: badge de disponibilidad, título H1, descripción y CTA.
+            -->
+            <div style="position:absolute; inset:0; z-index:10; display:flex; align-items:center; padding:0 5vw;">
+                <div style="max-width:620px;">
+
+                    <!-- Badge de estado / disponibilidad -->
+                    <div class="inline-flex items-center space-x-2 mb-6 px-3 py-1 border border-primary/30 bg-primary/5 rounded-full"
+                        style="backdrop-filter:blur(8px);">
+                        <span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+                        <span class="text-[10px] uppercase tracking-widest text-primary font-mono">Disponible para
+                            proyectos 2024</span>
+                    </div>
+
+                    <!-- Título principal H1
+                         clamp() ajusta el tamaño de forma fluida entre
+                         3.8rem (móvil) y 8rem (escritorio grande). -->
+                    <h1 class="font-display font-bold tracking-tighter"
+                        style="font-size:clamp(3.8rem,9vw,8rem); line-height:.88; text-shadow:0 4px 40px rgba(0,0,0,.6);">
+                        Arte <br />
+                        <!-- "Digital" en gradiente de blanco a celeste -->
+                        <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-white to-primary/70">Digital</span>
+                    </h1>
+
+                    <!-- Descripción breve -->
+                    <p class="mt-8 font-light leading-relaxed"
+                        style="max-width:460px; font-size:1.1rem; color:rgba(255,255,255,.65); text-shadow:0 2px 12px rgba(0,0,0,.5);">
+                        Diseñado para la excelencia visual y el rendimiento técnico de vanguardia en entornos digitales.
+                    </p>
+
+                    <!-- Botón CTA: al hacer clic, hace scroll suave hasta #servicios -->
+                    <div class="mt-12" style="display:flex; align-items:center; gap:2rem;">
+                        <button onclick="document.querySelector('#servicios').scrollIntoView({behavior:'smooth'})"
+                            class="glow-border" style="display:inline-flex; align-items:center; gap:.7rem; padding:1rem 2.4rem;
+                                   background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.55);
+                                   border-radius:999px; cursor:pointer; transition:all .3s;
+                                   font-size:.72rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase;"
+                            onmouseover="this.style.background='rgba(14,165,233,1)'"
+                            onmouseout="this.style.background='rgba(14,165,233,0.15)'">
+                            Ver Proyectos
+                            <span class="material-symbols-outlined" style="font-size:1rem;">arrow_forward</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!--
+            DEGRADADO INFERIOR DE TRANSICIÓN
+            Gradiente de negro opaco → transparente hacia arriba.
+            Suaviza la unión visual entre el hero y la sección siguiente.
+            bottom:-50px permite que se superponga con la sección de abajo.
+            -->
+            <div
+                style="position:absolute; bottom:-50px; left:0; width:100%; height:45vh; z-index:25; pointer-events:none;
+                background:linear-gradient(to top, #020617 0%, rgba(2,6,23,0.9) 20%, rgba(14,165,233,0.05) 50%, transparent 100%);">
+            </div>
+
+            <!--
+            INDICADOR DE SCROLL (scroll hint)
+            Pequeña animación de rebote (hintBob) que invita al usuario
+            a hacer scroll. Desaparece naturalmente cuando el usuario scrollea.
+            -->
+            <div style="position:absolute; bottom:2.5rem; left:50%; transform:translateX(-50%);
+                        display:flex; flex-direction:column; align-items:center; gap:.6rem;
+                        opacity:.35; z-index:20; animation:hintBob 2s ease-in-out infinite;">
+                <span
+                    style="font-size:.5rem; letter-spacing:.45em; text-transform:uppercase; font-family:monospace;">Scroll</span>
+                <span class="material-symbols-outlined" style="font-size:1.2rem;">mouse</span>
+            </div>
+
+        </section>
+    </div><!-- /scroll-stage -->
+
+
+    <!--
+    ================================================================
+    SECCIÓN SERVICIOS
+    -mt-32 la superpone visualmente sobre el gradiente inferior
+    del hero para una transición fluida entre secciones.
+    ================================================================
+    -->
+    <section class="relative py-32 px-8 md:px-16 -mt-32" id="servicios" style="background:#020617;">
+
+        <!-- Orbes decorativos de fondo (blur radial, no interactivos) -->
+        <div class="bg-glow"
+            style="top:-10%; left:-20%; background:radial-gradient(circle,rgba(14,165,233,0.1) 0%,transparent 70%);">
+        </div>
+        <div class="bg-glow"
+            style="bottom:10%; right:-20%; background:radial-gradient(circle,rgba(30,58,138,0.15) 0%,transparent 70%);">
+        </div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+
+            <!-- Encabezado de sección -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-20">
+                <div>
+                    <h2 class="text-[10px] uppercase tracking-[0.5em] text-primary mb-4 font-mono">/ Servicios del
+                        Sistema</h2>
+                    <h3 class="font-display text-4xl md:text-5xl font-bold">Soluciones <span class="text-white/40">de
+                            Próxima Generación</span></h3>
+                </div>
+                <p class="text-white/40 max-w-sm mt-6 md:mt-0 text-sm font-light">
+                    Combinamos estética brutalista con ingeniería precisa para crear experiencias memorables.
+                </p>
+            </div>
+
+            <!--
+            GRID DE TARJETAS DE SERVICIOS
+            gap-px + bg-white/10 en el contenedor crean líneas separadoras
+            entre tarjetas sin bordes adicionales (truco de "grid gap" con color).
+            Cada tarjeta tiene hover con cambio de fondo y escala del ícono.
+            -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10">
+                <div class="bg-dark-bg p-10 group hover:bg-primary/5 transition-colors">
+                    <span
+                        class="material-symbols-outlined text-4xl text-primary mb-8 block group-hover:scale-110 transition-transform">deployed_code</span>
+                    <h4 class="font-display text-xl mb-4">Diseño UI/UX</h4>
+                    <p class="text-sm text-white/50 leading-relaxed">Interfaces fluidas optimizadas para la interacción
+                        humana y mecánica.</p>
+                </div>
+                <div class="bg-dark-bg p-10 group hover:bg-primary/5 transition-colors">
+                    <span
+                        class="material-symbols-outlined text-4xl text-primary mb-8 block group-hover:scale-110 transition-transform">view_in_ar</span>
+                    <h4 class="font-display text-xl mb-4">Modelado 3D</h4>
+                    <p class="text-sm text-white/50 leading-relaxed">Visualización de productos en entornos virtuales de
+                        alta fidelidad.</p>
+                </div>
+                <div class="bg-dark-bg p-10 group hover:bg-primary/5 transition-colors">
+                    <span
+                        class="material-symbols-outlined text-4xl text-primary mb-8 block group-hover:scale-110 transition-transform">terminal</span>
+                    <h4 class="font-display text-xl mb-4">Desarrollo</h4>
+                    <p class="text-sm text-white/50 leading-relaxed">Arquitecturas de código limpio preparadas para el
+                        escalado masivo.</p>
+                </div>
+                <div class="bg-dark-bg p-10 group hover:bg-primary/5 transition-colors">
+                    <span
+                        class="material-symbols-outlined text-4xl text-primary mb-8 block group-hover:scale-110 transition-transform">token</span>
+                    <h4 class="font-display text-xl mb-4">Estrategia</h4>
+                    <p class="text-sm text-white/50 leading-relaxed">Posicionamiento de marca en el ecosistema digital
+                        contemporáneo.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!--
+    ================================================================
+    SECCIÓN PROYECTOS
+    Grid asimétrico de 12 columnas (md:grid-cols-12) para crear
+    una composición editorial con tarjetas de distintos tamaños.
+    ================================================================
+    -->
+    <section class="relative py-32 px-8 md:px-16 overflow-hidden" id="proyectos">
+
+        <!-- Orbes decorativos de fondo -->
+        <div class="bg-glow"
+            style="top:20%; right:-10%; background:radial-gradient(circle,rgba(14,165,233,0.07) 0%,transparent 70%);">
+        </div>
+        <div class="bg-glow"
+            style="bottom:-20%; left:-10%; background:radial-gradient(circle,rgba(30,58,138,0.12) 0%,transparent 70%);">
+        </div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+
+            <!-- Encabezado de sección -->
+            <div class="mb-20">
+                <h2 class="text-[10px] uppercase tracking-[0.5em] text-primary mb-4 font-mono">/ Archivo de Proyectos
+                </h2>
+                <h3 class="font-display text-4xl md:text-5xl font-bold">Producciones <span
+                        class="text-white/40">Destacadas</span></h3>
+            </div>
+
+            <!--
+            GRID DE PROYECTOS
+            Cada tarjeta ocupa un número distinto de columnas (col-span)
+            para variar el peso visual: 8+4 en la fila 1, 4+8 en la fila 2.
+            El hover escala la imagen y elimina el filtro grayscale.
+            -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+
+                <!-- Proyecto 1: tarjeta ancha (8/12 columnas) -->
+                <div
+                    class="md:col-span-8 group relative overflow-hidden bg-slate-900 aspect-video md:aspect-auto h-[500px]">
+                    <img alt="Proyecto 1"
+                        class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAR824wCKsXsLrv7wAGtNNG6EyeD6HAPIsAp761nps6keXKNB4sfpQPJszD_au9PK1EJRlFYVlYR9q9kPwptrekxarnxDEIEOBpDYZCxMBpCA8G41xzhRDZEcpuXpn0lC5EA-NLzq3lSdgERhB9S6OtF5c-W6V3yb-QwAI6RryiTomRv4EOZC4v0G50mdMGCk61YdTAQR79zXNlNHlkm3HHzrKkZDX9CUQroszJ88_9wmx63SyncOdOdRrW4IKMbdLmGBs_uTnwyfA" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-transparent"></div>
+                    <div class="absolute bottom-10 left-10 right-10 flex justify-between items-end">
+                        <div>
+                            <span
+                                class="text-[10px] uppercase tracking-widest text-primary font-mono mb-2 block">Campaña
+                                Global // 2024</span>
+                            <h4 class="font-display text-3xl font-bold">Protocolo Cyberpunk</h4>
+                        </div>
+                        <button
+                            class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all">
+                            <span class="material-symbols-outlined text-sm">north_east</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Proyecto 2: tarjeta estrecha (4/12 columnas) -->
+                <div class="md:col-span-4 group relative overflow-hidden bg-slate-900 h-[500px]">
+                    <img alt="Proyecto 2"
+                        class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-all duration-700 grayscale hover:grayscale-0"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB8sG9VqOgM4JK2xJqvqyqscR4Rje5RyVUIwotMRsKqMmXaOxEaIkFkUTzYoEE57HBEUkm-rVuJxTzfzSGntITgJBilpCnIlHEDbmSImc2oxcWOrop5v--X3y0dZpi1En_xqdtxIitF56oxeUWdZ9QLhn_p68Hmy9DobMSa2cgSc05wqgprfkvymSFHcjUbS-_7Fz-0_qsUhUP7vwwfwhEpGBUcTuQFFnEgnmQRauZAjTiycbIXoKtT9DMZL4uhE-ON5GsiGtBxwo" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-transparent"></div>
+                    <div class="absolute bottom-10 left-10">
+                        <span class="text-[10px] uppercase tracking-widest text-primary font-mono mb-2 block">UI/UX //
+                            2023</span>
+                        <h4 class="font-display text-2xl font-bold">Neural Link UI</h4>
+                    </div>
+                </div>
+
+                <!-- Proyecto 3: tarjeta estrecha (4/12 columnas) -->
+                <div class="md:col-span-4 group relative overflow-hidden bg-slate-900 h-[400px]">
+                    <img alt="Proyecto 3"
+                        class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-all duration-700 grayscale hover:grayscale-0"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdBGOrfXIq2lQQWZgvLEafIhLPehjy9w6e7P0mu03O99TXNW_hOXLkMCsrs12VsZP-SNAkCb98ETkYywpe68hEJqkWilAlE9W3Zl48j98SLo7isN_ou3BSsjr5Bjy3t4e2ya9CCqxEYaibudQC6574RX-_ZcGjHaBKfv-1aGGc2X9MzKYo6jpEFTfDloPoGeAbDLvpOXzLSqVVauC7AZAEGHFEe9nTuJmnYxv5udjHuAumrPi6bH3qeVxmRA38S2XAK3EDcUlmO3o" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-transparent"></div>
+                    <div class="absolute bottom-8 left-8">
+                        <span
+                            class="text-[10px] uppercase tracking-widest text-primary font-mono mb-2 block">Experimental
+                            // 2023</span>
+                        <h4 class="font-display text-2xl font-bold">Flujo Cuántico</h4>
+                    </div>
+                </div>
+
+                <!-- Proyecto 4: tarjeta ancha (8/12 columnas) -->
+                <div class="md:col-span-8 group relative overflow-hidden bg-slate-900 h-[400px]">
+                    <img alt="Proyecto 4"
+                        class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-all duration-700 grayscale hover:grayscale-0"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV4TlmTpqVHMDeZ1wNHTjmEhkXzLWwu9GT25dGK7L7wxRQc9f4WEynyQPddoPMh3_RdHlIjWymQrmNqGLa941XtNFMhLR5y550POQ2cfB0f3u6gY3Z_Iw_kxkIYbSDW0-aT5G8gzmj91hMf2zrRGit8RUSL1GK8en_gWmJaaFhgm_GnDECCrKrUvfc9b_ZnS8GiNWwfz4DzzwLHHE59kS6x4HG0yz_kbXRAvdLz20tfkFtGPS99snu3QAR1A7XegaVDy-37vtYDHA" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-transparent"></div>
+                    <div class="absolute bottom-8 left-8">
+                        <span class="text-[10px] uppercase tracking-widest text-primary font-mono mb-2 block">Branding
+                            // 2024</span>
+                        <h4 class="font-display text-2xl font-bold">Identidad Sintética</h4>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botón "Ver Archivo Completo" centrado -->
+            <div class="mt-20 flex justify-center">
+                <button
+                    class="px-8 py-3 border border-white/10 text-[10px] uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all">
+                    Ver Archivo Completo
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!--
+    ================================================================
+    FOOTER / CONTACTO
+    Fondo semitransparente (bg-black/40) con backdrop-blur para
+    darle profundidad y separarlo visualmente del resto del contenido.
+    ================================================================
+    -->
+    <footer class="relative py-20 px-8 md:px-16 border-t border-white/5 bg-black/40 backdrop-blur-md" id="contacto">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center">
+
+            <!-- Columna izquierda: logo + descripción -->
+            <div class="mb-12 md:mb-0">
+                <div class="flex items-center space-x-2 mb-6">
+                    <span class="font-display text-lg font-bold tracking-tighter uppercase">AURON <span
+                            class="text-primary">/</span> PORTAFOLIO</span>
+                </div>
+                <p class="text-white/30 text-xs font-light max-w-xs leading-relaxed">
+                    Elevando el estándar del diseño digital a través de la innovación constante y la estética futurista.
+                </p>
+            </div>
+
+            <!-- Columna derecha: links en 3 columnas (Social / Legal / Contacto) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-12 md:gap-20">
+                <div>
+                    <h5 class="text-[10px] uppercase tracking-[0.3em] text-white/20 mb-6 font-mono">Social</h5>
+                    <ul class="space-y-3">
+                        <li><a class="text-xs text-white/50 hover:text-primary transition-colors" href="#">Instagram</a>
+                        </li>
+                        <li><a class="text-xs text-white/50 hover:text-primary transition-colors" href="#">Behance</a>
+                        </li>
+                        <li><a class="text-xs text-white/50 hover:text-primary transition-colors" href="#">LinkedIn</a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-[10px] uppercase tracking-[0.3em] text-white/20 mb-6 font-mono">Legal</h5>
+                    <ul class="space-y-3">
+                        <li><a class="text-xs text-white/50 hover:text-primary transition-colors"
+                                href="#">Privacidad</a></li>
+                        <li><a class="text-xs text-white/50 hover:text-primary transition-colors" href="#">Términos</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                    <h5 class="text-[10px] uppercase tracking-[0.3em] text-white/20 mb-6 font-mono">Contacto</h5>
+                    <a class="text-xs text-white/50 hover:text-primary transition-colors"
+                        href="mailto:hello@auron.design">hello@auron.design</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pie del footer: copyright + coordenadas decorativas -->
+        <div
+            class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center text-[9px] text-white/20 uppercase tracking-[0.2em]">
+            <p>© 2024 Auron Studio. Todos los derechos reservados.</p>
+            <p class="mt-4 sm:mt-0 font-mono">LAT: 40.7128° N // LONG: 74.0060° W</p>
+        </div>
+    </footer>
+
+
+    <!--
+    Script propio al final del body para asegurarse de que todos
+    los elementos del DOM ya existen antes de que el JS los use.
+    -->
+    <script src="script.js"></script>
+    <script src="three.min.js"></script>
+
+</body>
+
+</html>
