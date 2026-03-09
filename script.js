@@ -27,7 +27,7 @@
        IMG_COUNT se detecta automáticamente con búsqueda binaria.
        ────────────────────────────────────────────────────────── */
     const IMG_FOLDER = 'img';
-    const IMG_EXT = 'png';
+    const IMG_EXT = 'webp';
     const PX_STEP = 100;
 
     /** Genera el path de la imagen número n (índice 1-based) */
