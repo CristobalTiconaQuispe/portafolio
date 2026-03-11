@@ -29,7 +29,7 @@
        ────────────────────────────────────────────────────────── */
     const SEQUENCES = [
         { folder: 'img',  ext: 'webp' },
-        { folder: 'img2', ext: 'png'  },
+        { folder: 'img2', ext: 'webp'  },
     ];
     const PX_STEP = 100;
 
