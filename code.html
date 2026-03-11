@@ -267,6 +267,26 @@
         </section>
     </div><!-- /scroll-stage -->
 
+    <!--
+    ================================================================
+    BOTÓN DE CAMBIO DE SECUENCIA
+    Posición: fixed, esquina inferior derecha.
+    z-index:200 → por encima de todo el contenido.
+    Solo visible durante el hero (controlado por script.js).
+    ================================================================
+    -->
+    <button id="seq-switch-btn" aria-label="Cambiar secuencia de imágenes">
+        <span class="seq-btn-icon material-symbols-outlined">swap_horiz</span>
+        <span class="seq-btn-text">
+            <span id="seq-label">Sec. 2</span>
+        </span>
+        <!-- Indicador de qué secuencia está activa -->
+        <span id="seq-indicator" data-active="0">
+            <span class="seq-dot" data-seq="0"></span>
+            <span class="seq-dot" data-seq="1"></span>
+        </span>
+    </button>
+
 
     <!--
     ================================================================

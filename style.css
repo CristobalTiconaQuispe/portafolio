@@ -191,3 +191,117 @@ body {
         font-size: clamp(2.8rem, 12vw, 5rem) !important;
     }
 }
+
+
+/* ---- 14. BOTÓN DE CAMBIO DE SECUENCIA (#seq-switch-btn)
+   Posición fija en la esquina inferior derecha.
+   Glassmorphism: fondo semitransparente + blur.
+   Transición suave de opacidad gestionada por script.js. */
+#seq-switch-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 1.1rem 0.65rem 0.85rem;
+
+    /* Glassmorphism */
+    background: rgba(2, 6, 23, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(14, 165, 233, 0.35);
+    border-radius: 999px;
+    box-shadow:
+        0 0 18px rgba(14, 165, 233, 0.18),
+        inset 0 0 10px rgba(14, 165, 233, 0.04);
+
+    /* Texto */
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    /* Transición a opacidad y hover */
+    opacity: 1;
+    transition:
+        opacity 0.4s ease,
+        background 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.2s ease;
+    will-change: transform, opacity;
+}
+
+#seq-switch-btn:hover {
+    background: rgba(14, 165, 233, 0.18);
+    box-shadow:
+        0 0 28px rgba(14, 165, 233, 0.35),
+        inset 0 0 14px rgba(14, 165, 233, 0.08);
+    transform: scale(1.05);
+    color: #ffffff;
+}
+
+#seq-switch-btn:active {
+    transform: scale(0.97);
+}
+
+/* Ícono del botón */
+.seq-btn-icon {
+    font-size: 1.1rem !important;
+    color: #0ea5e9;
+    transition: transform 0.4s ease;
+}
+
+#seq-switch-btn:hover .seq-btn-icon {
+    transform: rotate(180deg);
+}
+
+/* Texto del botón */
+.seq-btn-text {
+    display: flex;
+    align-items: center;
+}
+
+/* Estado activo (secuencia 2 visible) */
+#seq-switch-btn.seq-active {
+    background: rgba(14, 165, 233, 0.2);
+    border-color: rgba(14, 165, 233, 0.6);
+    box-shadow:
+        0 0 24px rgba(14, 165, 233, 0.4),
+        inset 0 0 12px rgba(14, 165, 233, 0.1);
+    animation: seq-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes seq-pulse {
+    0%, 100% { box-shadow: 0 0 24px rgba(14, 165, 233, 0.4), inset 0 0 12px rgba(14, 165, 233, 0.1); }
+    50%       { box-shadow: 0 0 36px rgba(14, 165, 233, 0.65), inset 0 0 18px rgba(14, 165, 233, 0.18); }
+}
+
+/* Puntos indicadores de secuencia activa */
+#seq-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.seq-dot {
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: background 0.35s ease, transform 0.35s ease;
+}
+
+/* Punto activo según data-active del indicador */
+#seq-indicator[data-active="0"] .seq-dot[data-seq="0"],
+#seq-indicator[data-active="1"] .seq-dot[data-seq="1"] {
+    background: #0ea5e9;
+    transform: scale(1.4);
+    box-shadow: 0 0 6px rgba(14, 165, 233, 0.8);
+}
